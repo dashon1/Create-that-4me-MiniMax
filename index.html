@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DAT 4ME - AI Content Dashboard</title>
+  <link rel="icon" href="/favicon.ico">
+  <link rel="shortcut icon" href="/favicon.ico">
+</head>
+
+<body>
+  <div id="root"></div>
+  
+  <!-- SAFE IMAGE HELPERS -->
+  <script>
+    /* ------- SAFE IMAGE HELPERS ------- */
+
+    // 1) Produce a reliable placeholder (SVG data URI) if you only have label text
+    function placeholderDataURI(text = "Generated content", w = 1024, h = 1024) {
+      const esc = (s) => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">
+        <defs>
+          <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0%" stop-color="#4f46e5"/><stop offset="100%" stop-color="#9333ea"/>
+          </linearGradient>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#g)"/>
+        <text x="50%" y="50%" font-family="system-ui,Segoe UI,Roboto" font-size="${Math.floor(w/16)}"
+          fill="white" text-anchor="middle" dominant-baseline="middle">${esc(text)}</text>
+      </svg>`;
+      return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+    }
+
+    // 2) Normalize any value to a usable img src
+    function toImageSrc(value, fallbackLabel = "Generated content") {
+      // If you accidentally pass an object/array, recover
+      if (typeof value === "object" && value) {
+        // common shapes from APIs
+        if (value.publicUrl) return value.publicUrl;
+        if (value.url)       return value.url;
+        if (value.src)       return value.src;
+        // not recognizable → fallback
+        return placeholderDataURI(fallbackLabel);
+      }
+      if (typeof value !== "string" || !value.trim()) {
+        return placeholderDataURI(fallbackLabel);
+      }
+      const s = value.trim();
+
+      // Already a data URI or blob
+      if (s.startsWith("data:") || s.startsWith("blob:")) return s;
+
+      // Looks like a bare placeholder "1024x1024?text=..." → convert to data URI or a real service
+      if (/^\d{2,4}x\d{2,4}\?text=/i.test(s)) {
+        const txt = decodeURIComponent(s.split("?text=")[1] || fallbackLabel);
+        return placeholderDataURI(txt);
+        // Or use a real host: return `https://placehold.co/${s}`;
+      }
+
+      // Same-origin absolute path
+      if (s.startsWith("/")) return s;
+
+      // Full http(s) URL, keep it
+      if (/^https?:\/\//i.test(s)) return s;
+
+      // Relative file like "imgs/robot.jpg"
+      return "/" + s.replace(/^\/+/, "");
+    }
+
+    // 3) Safe <img> creation with fallback and no inline handlers
+    function mountSafeImage(targetEl, srcValue, alt = "Generated content") {
+      const el = (typeof targetEl === "string") ? document.querySelector(targetEl) : targetEl;
+      if (!el) return;
+
+      const img = new Image();
+      img.decoding = "async";
+      img.loading  = "lazy";
+      img.alt = alt;
+      img.style.cssText = "width:100%;height:100%;object-fit:cover;border-radius:12px;display:block";
+
+      img.addEventListener("error", () => {
+        img.src = placeholderDataURI(alt);
+      }, { once: true });
+
+      img.src = toImageSrc(srcValue, alt);
+      el.innerHTML = "";
+      el.appendChild(img);
+    }
+
+    // Clear cache and service workers
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
+    }
+    if (window.caches) {
+      caches.keys().then(keys => keys.forEach(k => caches.delete(k)));
+    }
+
+    // OPTIONAL: small diag
+    window.__imgTools = { toImageSrc, placeholderDataURI, mountSafeImage };
+  </script>
+  
+  <script type="module" src="/src/main.tsx?v=2025-11-04-01"></script>
+</body>
+
+</html>
