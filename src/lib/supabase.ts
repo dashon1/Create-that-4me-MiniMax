@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js'
 
 // Supabase configuration
-const supabaseUrl = "https://kcnczikreywcnyxjsriu.supabase.co"
-const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtjbmN6aWtyZXl3Y255eGpzcml1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIwNDI5MDMsImV4cCI6MjA3NzYxODkwM30.6tPT7_9C3OeuQ5c-46zczhaLg3rzZq3lnNPayb_B0Fo"
+const supabaseUrl = "https://db.aimicrotechlink.com"
+const supabaseAnonKey = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJzdXBhYmFzZSIsImlhdCI6MTc3NDk4MzI0MCwiZXhwIjo0OTMwNjU2ODQwLCJyb2xlIjoiYW5vbiJ9.rnJ-NTkbn0wkOXIudW6RdlWto61bAunBR8PbORDngUY"
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
